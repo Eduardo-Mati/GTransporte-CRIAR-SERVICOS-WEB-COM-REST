@@ -20,7 +20,28 @@ function Motoristas() {
   const [search, setSearch] = useState('');
 
   useEffect(() => {
-    
+    const fetchMotoristas = async () => {
+      const token = localStorage.getItem('token');
+      const headers = { 'Content-Type': 'application/json' };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      try {
+        const response = await fetch("http://localhost:3000/api/drivers", {
+          headers,
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setMotoristas(data);
+        }
+      } catch (error) {
+        console.error("Error fetching drivers:", error);
+      }
+    };
+
+    fetchMotoristas();
   }, []);
 
   const persist = (data) => {
@@ -32,22 +53,84 @@ function Motoristas() {
   const openEdit = () => { setEditId(null); setForm(emptyForm); setModal('edit'); };
   const openDelete = () => { setDeleteId(null); setModal('delete'); };
 
-  const handleSubmitAdd = (e) => {
+  const handleSubmitAdd = async (e) => {
     e.preventDefault();
-    persist([...motoristas, { ...form, id: Date.now() }]);
-    setModal(null);
+    const token = localStorage.getItem('token');
+    const headers = {
+      'Content-Type': 'application/json',
+    };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
+
+    try {
+
+      const response = await fetch("http://localhost:3000/api/drivers", {
+        method: "POST",
+        headers,
+        body: JSON.stringify(form),
+      });
+
+      if (response.ok) {
+        const newDriver = await response.json();
+        persist([...motoristas, newDriver]);
+        setForm(emptyForm);
+        setModal(null);
+      } else {
+        console.error('Erro ao adicionar motorista', response.status);
+      }
+    } catch (error) {
+      console.error("Error adding driver:", error);
+    }
   };
 
-  const handleSubmitEdit = (e) => {
+  const handleSubmitEdit = async (e) => {
     e.preventDefault();
-    persist(motoristas.map((m) => (m.id === editId ? { ...form, id: editId } : m)));
-    setModal(null);
+    const token = localStorage.getItem('token');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
+    try {
+      const response = await fetch(`http://localhost:3000/api/drivers/${editId}`, {
+        method: "PUT",
+        headers,
+        body: JSON.stringify(form),
+      });
+
+      if (response.ok) {
+        const updatedDriver = await response.json();
+        persist(motoristas.map((m) => (m.driverId === editId ? updatedDriver : m)));
+        setModal(null);
+      }
+    } catch (error) {
+      console.error("Error updating driver:", error);
+    }
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!deleteId) return;
-    persist(motoristas.filter((m) => m.id !== deleteId));
-    setModal(null);
+    
+    const token = localStorage.getItem('token');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    try{
+      const response = await fetch(`http://localhost:3000/api/drivers/${deleteId}`, {
+        method: "DELETE",
+        headers
+      });
+      if (response.ok) {
+        persist(motoristas.filter((m) => m.driverId !== deleteId));
+        setModal(null);
+      }
+    } catch (error) {
+      console.error("Error deleting driver:", error);
+    }
   };
 
   const filtered = motoristas.filter(
@@ -104,7 +187,7 @@ function Motoristas() {
             </thead>
             <tbody>
               {filtered.map((m) => (
-                <tr key={m.id}>
+                <tr key={m.driverId}>
                   <td className="td-name">{m.nome}</td>
                   <td><span className="badge-placa">{m.cnh}</span></td>
                   <td><span className="badge-categoria">{m.categoria}</span></td>
@@ -112,10 +195,10 @@ function Motoristas() {
                   <td><span className={`status-badge ${m.status === 'Ativo' ? 'status-ativo' : 'status-inativo'}`}>{m.status}</span></td>
                   <td>
                     <div className="row-actions">
-                      <button className="row-btn row-edit" onClick={() => { setEditId(m.id); setForm({ ...m }); setModal('edit-form'); }} title="Editar">
+                      <button className="row-btn row-edit" onClick={() => { setEditId(m.driverId); setForm({ ...m }); setModal('edit-form'); }} title="Editar">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                       </button>
-                      <button className="row-btn row-delete" onClick={() => { setDeleteId(m.id); setModal('delete-confirm'); }} title="Excluir">
+                      <button className="row-btn row-delete" onClick={() => { setDeleteId(m.driverId); setModal('delete-confirm'); }} title="Excluir">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
                       </button>
                     </div>
@@ -184,7 +267,7 @@ function Motoristas() {
             <p className="modal-desc">Selecione o motorista que deseja editar:</p>
             <div className="select-list">
               {motoristas.map((m) => (
-                <div key={m.id} className={`select-item ${editId === m.id ? 'selected' : ''}`} onClick={() => { setEditId(m.id); setForm({ ...m }); }}>
+                <div key={m.driverId} className={`select-item ${editId === m.driverId ? 'selected' : ''}`} onClick={() => { setEditId(m.driverId); setForm({ ...m }); }}>
                   <span className="td-name">{m.nome}</span>
                   <span className="badge-placa">{m.cnh}</span>
                   <span className={`status-badge ${m.status === 'Ativo' ? 'status-ativo' : 'status-inativo'}`}>{m.status}</span>
@@ -256,7 +339,7 @@ function Motoristas() {
             <p className="modal-desc">Selecione o motorista que deseja excluir:</p>
             <div className="select-list">
               {motoristas.map((m) => (
-                <div key={m.id} className={`select-item select-item-delete ${deleteId === m.id ? 'selected-delete' : ''}`} onClick={() => setDeleteId(m.id)}>
+                <div key={m.driverId} className={`select-item select-item-delete ${deleteId === m.driverId ? 'selected-delete' : ''}`} onClick={() => setDeleteId(m.driverId)}>
                   <span className="td-name">{m.nome}</span>
                   <span className="badge-placa">{m.cnh}</span>
                   <span className={`status-badge ${m.status === 'Ativo' ? 'status-ativo' : 'status-inativo'}`}>{m.status}</span>
@@ -279,7 +362,7 @@ function Motoristas() {
               <h2>Confirmar Exclusão</h2>
               <button className="modal-close" onClick={() => setModal(null)}>✕</button>
             </div>
-            <p className="modal-desc">Tem certeza que deseja excluir o motorista <strong>{motoristas.find(m => m.id === deleteId)?.nome}</strong>?</p>
+            <p className="modal-desc">Tem certeza que deseja excluir o motorista <strong>{motoristas.find(m => m.driverId === deleteId)?.nome}</strong>?</p>
             <div className="modal-footer">
               <button type="button" className="btn-cancel" onClick={() => setModal(null)}>Cancelar</button>
               <button className="btn-confirm btn-delete" onClick={handleDelete}>Excluir</button>

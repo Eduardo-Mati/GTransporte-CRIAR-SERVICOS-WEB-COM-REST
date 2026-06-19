@@ -1,29 +1,29 @@
 import driversModel from "../models/driversModel.js";
 
 const controller = {
-  getAll: (req, res) => {
-    const drivers = driversModel.findAll();
-    res.send(drivers);
+  getAll: async (req, res) => {
+    const drivers = await driversModel.findAll();
+    res.json(drivers);
   },
-  getById: (req, res) => {
-    const driver = driversModel.findById(req.params.id);
-    res.send(driver);
+  getById: async (req, res) => {
+    const driver = await driversModel.findById(req.params.id);
+    res.json(driver);
   },
-  create: (req, res) => {
+  create: async (req, res) => {
     const driver = req.body;
-    const newDriver = driversModel.create(driver);
-    res.status(201).send(`create driver with name ${JSON.stringify(driver.name)}`);
+    const newDriver = await driversModel.create(driver);
+    res.status(201).json(newDriver);
   },
-  update: (req, res) => {
+  update: async (req, res) => {
     const driver = req.body;
     const driverId = req.params.id;
-    const updatedDriver = driversModel.update(driverId, driver);
-    res.send(`update driver by id ${req.params.id}`);
+    const updatedDriver = await driversModel.update(driverId, driver);
+    res.json(updatedDriver);
   },
-  delete: (req, res) => {
+  delete: async (req, res) => {
     const driverId = req.params.id;
-    const deletedDriver = driversModel.delete(driverId);
-    res.send(`delete driver by id ${req.params.id}`);
+    await driversModel.delete(driverId);
+    res.status(204).send();
   },
 };
 export default controller;

@@ -36,25 +36,123 @@ function Rotas() {
     setModal("delete");
   };
 
-  const handleSubmitAdd = (e) => {
+  const handleSubmitAdd = async (e) => {
     e.preventDefault();
-    persist([...viagens, { ...form, id: Date.now() }]);
-    setModal(null);
+    const token = localStorage.getItem("token");
+    const headers = {
+      'Content-Type': 'application/json',
+    };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    const frotas = JSON.parse(localStorage.getItem("frotas") || "[]");
+    const frota = frotas.find(f => f.placa === form.veiculo);
+    const fleetId = frota ? frota.fleetId : null;
+
+    const motoristaData = JSON.parse(localStorage.getItem("motoristas") || "[]");
+    const motorista = motoristaData.find(m => m.nome === form.motorista);
+    const driverId = motorista ? motorista.driverId : null;
+
+    const travelData = {
+      origem: form.origem,
+      destino: form.destino,
+      veiculo_id: fleetId,
+      motorista_id: driverId,
+      data: form.data,
+      status: form.status,
+    };
+
+    try{
+      const response = await fetch("http://localhost:3000/api/travels", {
+        method: "POST",
+        headers,
+        body: JSON.stringify(travelData)
+      });
+
+      if(response.ok){
+        const newTravel = await response.json();
+        persist([...viagens, newTravel]);
+        setForm(emptyForm);
+        setModal(null);
+      } else {
+        console.error('Erro ao adicionar viagem', response.status);
+      }
+    } catch (error) {
+      console.error("Error adding travel:", error);
+    }
   };
 
-  const handleSubmitEdit = (e) => {
+  const handleSubmitEdit = async (e) => {
     e.preventDefault();
-    persist(
-      viagens.map((v) => (v.id === editId ? { ...form, id: editId } : v)),
+    const token = localStorage.getItem("token");
+    const headers = {
+      'Content-Type': 'application/json',
+    };
+    if(token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
+    const frotas = JSON.parse(localStorage.getItem("frotas") || "[]");
+    const frota = frotas.find((f) => f.placa === form.veiculo);
+    const fleetId = frota ? frota.fleetId : null;
+
+    const motoristasData = JSON.parse(
+      localStorage.getItem("motoristas") || "[]",
     );
-    setModal(null);
+    const motorista = motoristasData.find((m) => m.nome === form.motorista);
+    const driverId = motorista ? motorista.driverId : null;
+
+    const travelData = {
+      origem: form.origem,
+      destino: form.destino,
+      veiculo_id: fleetId,
+      motorista_id: driverId,
+      status: form.status,
+      data: form.data,
+    };
+
+    try {
+      const response = await fetch(
+        `http://localhost:3000/api/travels/${editId}`,
+        {
+          method: "PUT",
+          headers,
+          body: JSON.stringify(travelData),
+        },
+      );
+
+      if (response.ok) {
+        const updatedTravel = await response.json();
+        persist(
+          viagens.map((v) => (v.travelId === editId ? updatedTravel : v)),
+        );
+        setModal(null);
+      }
+    } catch (error) {
+      console.error("Erro ao editar viagem:", error);
+    }
+
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!deleteId) return;
-    persist(viagens.filter((v) => v.id !== deleteId));
-    setModal(null);
-  };
+    const token = localStorage.getItem("token");
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    try {
+      await fetch(`http://localhost:3000/api/travels/${deleteId}`, {
+        method: "DELETE",
+        headers
+      });
+      persist(viagens.filter((v) => v.travelId !== deleteId));
+      setModal(null);
+    } catch (error) {
+      console.error("Error deleting travel:", error);
+    }
+    };
 
   const statusColor = (s) => {
     if (s === "Em andamento") return "status-andamento";
@@ -63,11 +161,11 @@ function Rotas() {
   };
 
   const filtered = viagens.filter(
-    (v) =>
-      v.origem.toLowerCase().includes(search.toLowerCase()) ||
-      v.destino.toLowerCase().includes(search.toLowerCase()) ||
-      v.motorista.toLowerCase().includes(search.toLowerCase()),
-  );
+  (v) =>
+    v.origem.toLowerCase().includes(search.toLowerCase()) ||
+    v.destino.toLowerCase().includes(search.toLowerCase()) ||
+    getMotoristaName(v.motorista_id).toLowerCase().includes(search.toLowerCase()),
+);
 
   const formFields = (
     <>
@@ -99,7 +197,7 @@ function Rotas() {
         >
           <option value="">Selecione um motorista</option>
           {motoristas.map((m) => (
-            <option key={m.id} value={m.nome}>
+            <option key={m.driverId} value={m.driverId}>
               {m.nome}
             </option>
           ))}
@@ -113,7 +211,7 @@ function Rotas() {
         >
           <option value="">Selecione um veículo</option>
           {frotas.map((f) => (
-            <option key={f.id} value={f.placa}>
+            <option key={f.fleetId} value={f.placa}>
               {f.placa} — {f.modelo}
             </option>
           ))}
@@ -145,6 +243,15 @@ function Rotas() {
     </>
   );
 
+ const getMotoristaName = (driverId) => {
+    if (!driverId) return "—";
+    return motoristas.find((m) => m.driverId === driverId)?.nome || "—";
+  };
+
+ const getFrotaPlaca = (fleetId) => {
+    if (!fleetId) return "—";
+    return frotas.find((f) => f.fleetId === fleetId)?.placa || "—";
+  };
   return (
     <div className="page-container">
       <div className="page-header">
@@ -253,15 +360,15 @@ function Rotas() {
             </thead>
             <tbody>
               {filtered.map((v) => (
-                <tr key={v.id}>
+                <tr key={v.travelId}>
                   <td className="td-rota">
                     <span className="rota-texto">
                       {v.origem} → {v.destino}
                     </span>
                   </td>
-                  <td>{v.motorista || "—"}</td>
+                  <td>{getMotoristaName(v.motorista_id)}</td>
                   <td>
-                    <span className="badge-placa">{v.veiculo || "—"}</span>
+                    <span className="badge-placa">{getFrotaPlaca(v.veiculo_id)}</span>
                   </td>
                   <td>
                     {v.data
@@ -278,7 +385,7 @@ function Rotas() {
                       <button
                         className="row-btn row-edit"
                         onClick={() => {
-                          setEditId(v.id);
+                          setEditId(v.travelId);
                           setForm({ ...v });
                           setModal("edit-form");
                         }}
@@ -298,7 +405,7 @@ function Rotas() {
                       <button
                         className="row-btn row-delete"
                         onClick={() => {
-                          setDeleteId(v.id);
+                          setDeleteId(v.travelId);
                           setModal("delete-confirm");
                         }}
                         title="Excluir"
@@ -369,11 +476,20 @@ function Rotas() {
             <div className="select-list">
               {viagens.map((v) => (
                 <div
-                  key={v.id}
-                  className={`select-item ${editId === v.id ? "selected" : ""}`}
+                  key={v.travelId}
+                  className={`select-item ${editId === v.travelId ? "selected" : ""}`}
                   onClick={() => {
-                    setEditId(v.id);
-                    setForm({ ...v });
+                    setEditId(v.travelId);
+                    const motorista = motoristas.find((m) => m.driverId === v.motorista_id);
+                    const frotaObj = frotas.find((f) => f.fleetId === v.veiculo_id);
+                    setForm({
+                      origem: v.origem || "",
+                      destino: v.destino || "",
+                      motorista: motorista ? motorista.nome : "",
+                      veiculo: frotaObj ? frotaObj.placa : "",
+                      data: v.data || "",
+                      status: v.status || "",
+                    });
                   }}
                 >
                   <span className="rota-texto">
@@ -449,9 +565,9 @@ function Rotas() {
             <div className="select-list">
               {viagens.map((v) => (
                 <div
-                  key={v.id}
-                  className={`select-item select-item-delete ${deleteId === v.id ? "selected-delete" : ""}`}
-                  onClick={() => setDeleteId(v.id)}
+                  key={v.travelId}
+                  className={`select-item select-item-delete ${deleteId === v.travelId ? "selected-delete" : ""}`}
+                  onClick={() => setDeleteId(v.travelId)}
                 >
                   <span className="rota-texto">
                     {v.origem} → {v.destino}
@@ -496,8 +612,8 @@ function Rotas() {
             <p className="modal-desc">
               Tem certeza que deseja excluir a viagem{" "}
               <strong>
-                {viagens.find((v) => v.id === deleteId)?.origem} →{" "}
-                {viagens.find((v) => v.id === deleteId)?.destino}
+                {viagens.find((v) => v.travelId === deleteId)?.origem} →{" "}
+                {viagens.find((v) => v.travelId === deleteId)?.destino}
               </strong>
               ?
             </p>

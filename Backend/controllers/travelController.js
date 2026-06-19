@@ -1,29 +1,29 @@
 import travelModel from "../models/travelModel.js";
 
 const controller = {
-  getAll: (req, res) => {
-    const travels = travelModel.findAll();
-    res.send(travels);
+  getAll: async (req, res) => {
+    const travels = await travelModel.findAll();
+    res.json(travels);
   },
-  getById: (req, res) => {
-    const travel = travelModel.find(req.params.id);
-    res.send(travel);
+  getById: async (req, res) => {
+    const travel = await travelModel.findById(req.params.id);
+    res.json(travel);
   },
-  create: (req, res) => {
+  create: async (req, res) => {
     const travel = req.body;
-    const newTravel = travelModel.create(travel);
-    res.status(201).send(`create travel with name ${JSON.stringify(travel.name)}`);
+    const newTravel = await travelModel.create(travel);
+    res.status(201).json(newTravel);
   },
-  update: (req, res) => {
+  update: async (req, res) => {
     const travel = req.body;
     const travelId = req.params.id;
-    const updatedTravel = travelModel.update(travelId, travel);
-    res.send(`update travel by id ${req.params.id}`);
+    const updatedTravel = await travelModel.update(travelId, travel);
+    res.json(updatedTravel);
   },
-  delete: (req, res) => {
+  delete: async (req, res) => {
     const travelId = req.params.id;
-    const deletedTravel = travelModel.delete(travelId);
-    res.send(`delete travel by id ${req.params.id}`);
+    await travelModel.delete(travelId);
+    res.status(204).send();
   },
 };
 export default controller;
