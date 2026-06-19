@@ -1,29 +1,33 @@
 import reportModel from "../models/reportModel.js";
 
 const controller = {
-  getAll: (req, res) => {
-    const reports = reportModel.findAll();
-    res.send(reports);
+  getAll: async (req, res) => {
+    const reports =  await reportModel.findAll();
+    res.json(reports);
   },
-  getById: (req, res) => {
-    const report = reportModel.find(req.params.id);
-    res.send(report);
+  getById: async (req, res) => {
+    const report = await reportModel.find(req.params.id);
+    res.json(report);
   },
-  create: (req, res) => {
-    const report = req.body;
-    const newReport = reportModel.create(report);
-    res.status(201).send(`create report with name ${JSON.stringify(report.name)}`);
+  create: async (req, res) => {
+    const { travelId, content } = req.body;
+    const userId = req.user.id; 
+    const newReport = await reportModel.create({ travelId, userId, content });
+    res.status(201).json(newReport);
+  
   },
-  update: (req, res) => {
-    const report = req.body;
+  update: async (req, res) => {
+    const { travelId, content } = req.body;
+    const userId = req.user.id;
     const reportId = req.params.id;
-    const updatedReport = reportModel.update(reportId, report);
-    res.send(`update report by id ${req.params.id}`);
+    const updatedReport = await reportModel.update(reportId, { travelId, userId, content });
+    res.json(updatedReport);
+    
   },
-  delete: (req, res) => {
+  delete: async (req, res) => {
     const reportId = req.params.id;
-    const deletedReport = reportModel.delete(reportId);
-    res.send(`delete report by id ${req.params.id}`);
+    await reportModel.delete(reportId);
+    res.json({ message: `Relatório ${reportId} excluído com sucesso` });
   },
 };
 export default controller;

@@ -9,7 +9,7 @@ import Motoristas from './home/pages/Motoristas.jsx'
 import LayoutHome from './home/LayoutHome.jsx'
 import About from './login/pages/About.jsx'
 import Contact from './login/pages/Contact.jsx'
-import Reports from './home/pages/reports.jsx'
+import Reports from './home/pages/Reports.jsx'
 
 function App() {
   return (

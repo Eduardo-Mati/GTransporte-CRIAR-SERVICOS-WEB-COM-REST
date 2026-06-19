@@ -12,7 +12,7 @@ function Login() {
     const navigate = useNavigate()
     
 
-    let sendLogin = async(name,email, password) => {
+    let sendLogin = async(email, password) => {
         try {
             const response = await fetch('http://localhost:3000/api/auth/login', {
                 method: 'POST',
@@ -96,7 +96,7 @@ function Login() {
               <button
                 className="btn-next"
                 type="submit"
-                onClick={() => sendLogin(name, email, password)}
+                onClick={() => sendLogin(email, password)}
               >
                 Entrar
               </button>

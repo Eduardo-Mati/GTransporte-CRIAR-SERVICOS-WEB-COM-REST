@@ -10,11 +10,11 @@ const model = {
     return result;
   },
   create: async function (travel) {
-    const [result] = await promissePool.query("INSERT INTO travels (origem, destino, veiculo_id, motorista_id, status) VALUES (?, ?, ?, ?, ?)",[travel.origem, travel.destino, travel.veiculo_id, travel.motorista_id, travel.status]);
+    const [result] = await promissePool.query("INSERT INTO travels (origem, destino, veiculo_id, motorista_id, data, status) VALUES (?, ?, ?, ?, ?, ?)",[travel.origem, travel.destino, travel.veiculo_id, travel.motorista_id, travel.data, travel.status]);
     return { travelId: result.insertId, ...travel };
   },
   update: async function (id, travel) {
-    const [result] = await promissePool.query("UPDATE travels SET origem = ?, destino = ?, veiculo_id = ?, motorista_id = ?, status = ? WHERE travelId = ?",[travel.origem, travel.destino, travel.veiculo_id, travel.motorista_id, travel.status, id]);
+    const [result] = await promissePool.query("UPDATE travels SET origem = ?, destino = ?, veiculo_id = ?, motorista_id = ?, data = ?, status = ? WHERE travelId = ?",[travel.origem, travel.destino, travel.veiculo_id, travel.motorista_id, travel.data, travel.status, id]);
     return { travelId: id, ...travel };
   },
   delete: async function (id) {

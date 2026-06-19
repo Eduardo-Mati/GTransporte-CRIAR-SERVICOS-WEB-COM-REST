@@ -197,7 +197,7 @@ function Rotas() {
         >
           <option value="">Selecione um motorista</option>
           {motoristas.map((m) => (
-            <option key={m.driverId} value={m.driverId}>
+            <option key={m.driverId} value={m.name}>
               {m.nome}
             </option>
           ))}

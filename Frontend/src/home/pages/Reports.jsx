@@ -2,87 +2,154 @@ import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import "./reports.css";
 
-const STORAGE_KEY = "reports";
-
 const emptyForm = {
   travelId: "",
   content: "",
 };
 
-// Mock temporário só pra visualizar o layout — depois isso vem da API /api/travels
-const mockTravels = [
-  { id: 1, origem: "João Pessoa", destino: "Recife" },
-  { id: 2, origem: "Campina Grande", destino: "Natal" },
-  { id: 3, origem: "Patos", destino: "João Pessoa" },
-];
+// Helper: lê o token do localStorage e monta os headers
+const authHeaders = (json = false) => {
+  const token = localStorage.getItem("token");
+  const headers = {};
+  if (json) headers["Content-Type"] = "application/json";
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+  return headers;
+};
 
 function Reports() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [reports, setReports] = useState([]);
-  const [travels] = useState(mockTravels);
-  const [modal, setModal] = useState(null); // 'add' | 'edit' | 'delete-confirm'
+  const [travels, setTravels] = useState([]);
+  const [modal, setModal] = useState(null);
   const [form, setForm] = useState(emptyForm);
   const [editId, setEditId] = useState(null);
   const [deleteId, setDeleteId] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  // Lê o travelId da URL (ex: /home/reports?travelId=3), se existir
+
   const travelIdFilter = searchParams.get("travelId");
 
+ 
   useEffect(() => {
+    const headers = authHeaders();
 
+
+    fetch("http://localhost:3000/api/reports", { headers })
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) setReports(data);
+      })
+      .catch((err) => console.error("Erro ao buscar relatórios:", err));
+
+
+    fetch("http://localhost:3000/api/travels", { headers })
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) setTravels(data);
+      })
+      .catch((err) => console.error("Erro ao buscar viagens:", err));
   }, []);
 
-  const persist = (data) => {
-    setReports(data);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-  };
 
   const openAdd = () => {
     setForm({
       ...emptyForm,
-      // Se já veio filtrado por uma viagem, pré-seleciona ela no form
       travelId: travelIdFilter || "",
     });
     setModal("add");
   };
 
   const openEdit = (report) => {
-    setForm({ ...report });
-    setEditId(report.id);
+    setForm({ travelId: report.travelId, content: report.content });
+    setEditId(report.reportId);
     setModal("edit");
   };
 
-  const handleSubmitAdd = (e) => {
+
+  const handleSubmitAdd = async (e) => {
     e.preventDefault();
-    const novo = {
-      ...form,
-      id: Date.now(),
-      data: new Date().toISOString(),
-    };
-    persist([...reports, novo]);
-    setModal(null);
+    setLoading(true);
+    try {
+      const res = await fetch("http://localhost:3000/api/reports", {
+        method: "POST",
+        headers: authHeaders(true),
+        body: JSON.stringify({ travelId: form.travelId, content: form.content }),
+      });
+
+      if (res.ok) {
+        const created = await res.json();
+        setReports((prev) => [...prev, created]);
+        setModal(null);
+      } else {
+        const err = await res.json().catch(() => ({}));
+        alert(err.error || "Erro ao adicionar relatório");
+      }
+    } catch (error) {
+      console.error("Erro ao adicionar relatório:", error);
+      alert("Erro de conexão com o servidor");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleSubmitEdit = (e) => {
+
+  const handleSubmitEdit = async (e) => {
     e.preventDefault();
-    const atualizados = reports.map((r) =>
-      r.id === editId ? { ...r, ...form } : r,
-    );
-    persist(atualizados);
-    setModal(null);
+    setLoading(true);
+    try {
+      const res = await fetch(`http://localhost:3000/api/reports/${editId}`, {
+        method: "PUT",
+        headers: authHeaders(true),
+        body: JSON.stringify({ travelId: form.travelId, content: form.content }),
+      });
+
+      if (res.ok) {
+        const updated = await res.json();
+        setReports((prev) =>
+          prev.map((r) => (r.reportId === editId ? updated : r))
+        );
+        setModal(null);
+      } else {
+        const err = await res.json().catch(() => ({}));
+        alert(err.error || "Erro ao editar relatório");
+      }
+    } catch (error) {
+      console.error("Erro ao editar relatório:", error);
+      alert("Erro de conexão com o servidor");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleDelete = () => {
+
+  const handleDelete = async () => {
     if (!deleteId) return;
-    persist(reports.filter((r) => r.id !== deleteId));
-    setModal(null);
+    setLoading(true);
+    try {
+      const res = await fetch(`http://localhost:3000/api/reports/${deleteId}`, {
+        method: "DELETE",
+        headers: authHeaders(),
+      });
+
+      if (res.ok) {
+        setReports((prev) => prev.filter((r) => r.reportId !== deleteId));
+        setModal(null);
+      } else {
+        const err = await res.json().catch(() => ({}));
+        alert(err.error || "Erro ao excluir relatório");
+      }
+    } catch (error) {
+      console.error("Erro ao excluir relatório:", error);
+      alert("Erro de conexão com o servidor");
+    } finally {
+      setLoading(false);
+    }
   };
+
 
   const getTravelLabel = (travelId) => {
-    const travel = travels.find((t) => String(t.id) === String(travelId));
-    return travel
-      ? `${travel.origem} → ${travel.destino}`
-      : "Viagem não encontrada";
+    const travel = travels.find((t) => String(t.travelId) === String(travelId));
+    return travel ? `${travel.origem} → ${travel.destino}` : "Viagem não encontrada";
   };
 
   const formatDate = (isoString) => {
@@ -90,7 +157,7 @@ function Reports() {
     return new Date(isoString).toLocaleString("pt-BR");
   };
 
-  // Filtra a lista se houver um travelId na URL
+
   const filtered = travelIdFilter
     ? reports.filter((r) => String(r.travelId) === String(travelIdFilter))
     : reports;
@@ -100,7 +167,7 @@ function Reports() {
     if (value) {
       setSearchParams({ travelId: value });
     } else {
-      setSearchParams({}); // remove o filtro, volta pra URL limpa
+      setSearchParams({});
     }
   };
 
@@ -138,7 +205,7 @@ function Reports() {
         >
           <option value="">Todas as viagens</option>
           {travels.map((t) => (
-            <option key={t.id} value={t.id}>
+            <option key={t.travelId} value={t.travelId}>
               {t.origem} → {t.destino}
             </option>
           ))}
@@ -167,7 +234,7 @@ function Reports() {
           </div>
         ) : (
           filtered.map((report) => (
-            <div key={report.id} className="report-card">
+            <div key={report.reportId} className="report-card">
               <div className="report-card-header">
                 <div>
                   <span className="report-date">{formatDate(report.data)}</span>
@@ -195,7 +262,7 @@ function Reports() {
                   <button
                     className="row-btn row-delete"
                     onClick={() => {
-                      setDeleteId(report.id);
+                      setDeleteId(report.reportId);
                       setModal("delete-confirm");
                     }}
                     title="Excluir"
@@ -222,7 +289,7 @@ function Reports() {
         )}
       </div>
 
-      {/* MODAL ADICIONAR/EDITAR */}
+      {/* MODAL ADICIONAR / EDITAR */}
       {(modal === "add" || modal === "edit") && (
         <div className="modal-overlay" onClick={() => setModal(null)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
@@ -249,7 +316,7 @@ function Reports() {
                 >
                   <option value="">Selecione uma viagem</option>
                   {travels.map((t) => (
-                    <option key={t.id} value={t.id}>
+                    <option key={t.travelId} value={t.travelId}>
                       {t.origem} → {t.destino}
                     </option>
                   ))}
@@ -277,9 +344,14 @@ function Reports() {
                 </button>
                 <button
                   type="submit"
+                  disabled={loading}
                   className={`btn-confirm ${modal === "add" ? "btn-add" : "btn-edit"}`}
                 >
-                  {modal === "add" ? "Adicionar" : "Salvar Alterações"}
+                  {loading
+                    ? "Aguarde..."
+                    : modal === "add"
+                    ? "Adicionar"
+                    : "Salvar Alterações"}
                 </button>
               </div>
             </form>
@@ -309,8 +381,12 @@ function Reports() {
               >
                 Cancelar
               </button>
-              <button className="btn-confirm btn-delete" onClick={handleDelete}>
-                Excluir
+              <button
+                className="btn-confirm btn-delete"
+                onClick={handleDelete}
+                disabled={loading}
+              >
+                {loading ? "Aguarde..." : "Excluir"}
               </button>
             </div>
           </div>
