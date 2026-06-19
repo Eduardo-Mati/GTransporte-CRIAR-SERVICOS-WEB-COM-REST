@@ -40,10 +40,13 @@ function LayoutHome() {
             </li>
             <li>
               <a
-                onClick={() => navigate("/home/motoristas")}
-                href="/home/motoristas"
-              >
+                onClick={() => navigate("/home/motoristas")} href="/home/motoristas">
                 Motoristas
+              </a>
+            </li>
+            <li>
+              <a onClick={() => navigate("/home/reports")} href="/home/reports">
+                Relatórios
               </a>
             </li>
           </ul>

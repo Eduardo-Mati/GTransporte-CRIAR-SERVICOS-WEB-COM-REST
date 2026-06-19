@@ -2,10 +2,12 @@ import userModel from '../models/userModel.js'
 
 const controller = {
     getAll:(req,res) => {
-        res.send('get all users')
+        const users = userModel.findAll()
+        res.send(users)
     },
     getById:(req,res) => {
-        res.send(`get user by ID ${req.params.id}`)
+        const user = userModel.find(req.params.id)
+        res.send(user)
     },
     create:(req,res) => {
         const user = req.body;

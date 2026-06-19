@@ -9,20 +9,30 @@ function Login() {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
 
-    const user = { email: 'eduuumattias@gmail.com', password: '123123'}
     const navigate = useNavigate()
     
 
-    let sendLogin = () => {
+    let sendLogin = async(name,email, password) => {
+        try {
+            const response = await fetch('http://localhost:3000/api/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ email, password })
+            });
 
-        
-        if(email === user.email && password === user.password){
-            alert('Login realizado com sucesso')
-            navigate('/home/main')
-        }else{
-            alert('Email ou senha incorretos')
+            const data = await response.json();
+            if (response.ok) {
+                localStorage.setItem('token', data.token);
+                navigate('/home/main');
+            } else {
+                alert('Email ou senha incorretos');
+            }
+        } catch (error) {
+            console.error('Error during login:', error);
+            alert('Ocorreu um erro ao tentar fazer login');
         }
-
     }
 
 
@@ -52,6 +62,7 @@ function Login() {
                     <h1>Login</h1>
 
                     <form className="signup-form" method="POST" onSubmit={(e) => e.preventDefault()}>
+                        
                         <div className="form-field">
                             <label htmlFor="email">E-mail</label>
                             <input 
@@ -74,8 +85,9 @@ function Login() {
                                 onChange={(e) => setPassword(e.target.value)}
                             />
                         </div>
-                        <button className="btn-next" type="submit" onClick={sendLogin}>Entrar</button>
-                        
+                        <button className="btn-next" type="submit" onClick={() => sendLogin(name, email, password)}>
+                            Entrar
+                        </button>
                         <button className="btn-register" onClick={() => {navigate('/register')}}>
                             Não possue uma conta?
                         </button>

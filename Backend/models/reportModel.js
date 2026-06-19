@@ -1,6 +1,10 @@
 import promissePool from "../config/db.js";
 
 const model = {
+  findAll: async function () {
+    const [result] = await promissePool.query("SELECT * FROM reports");
+    return result;
+  },
   find: async function (report) {
     const [result] = await promissePool.query("SELECT * FROM reports WHERE travelId = ?",[report.travelId]);
     return result;

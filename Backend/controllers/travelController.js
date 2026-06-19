@@ -2,10 +2,12 @@ import travelModel from "../models/travelModel.js";
 
 const controller = {
   getAll: (req, res) => {
-    res.send("get all travels");
+    const travels = travelModel.findAll();
+    res.send(travels);
   },
   getById: (req, res) => {
-    res.send(`get travel by ID ${req.params.id}`);
+    const travel = travelModel.find(req.params.id);
+    res.send(travel);
   },
   create: (req, res) => {
     const travel = req.body;

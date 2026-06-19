@@ -2,10 +2,12 @@ import fleetsModel from "../models/fleetsModel.js";
 
 const controller = {
   getAll: (req, res) => {
-    res.send("get all fleets");
+    const fleets = fleetsModel.findAll();
+    res.send(fleets);
   },
   getById: (req, res) => {
-    res.send(`get fleet by ID ${req.params.id}`);
+    const fleet = fleetsModel.find(req.params.id);
+    res.send(fleet);
   },
   create: (req, res) => {
     const fleet = req.body;

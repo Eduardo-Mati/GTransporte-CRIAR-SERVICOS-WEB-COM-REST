@@ -1,6 +1,10 @@
 import promissePool from "../config/db.js";
 
 const model = {
+  findAll: async function () {
+    const [result] = await promissePool.query("SELECT * FROM users");
+    return result;
+  },
   find: async function (user) {
     const [result] = await promissePool.query("SELECT * FROM users WHERE email = ?",[user.email]);
     return result;

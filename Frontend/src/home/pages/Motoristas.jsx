@@ -20,8 +20,7 @@ function Motoristas() {
   const [search, setSearch] = useState('');
 
   useEffect(() => {
-    const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-    setMotoristas(stored);
+    
   }, []);
 
   const persist = (data) => {

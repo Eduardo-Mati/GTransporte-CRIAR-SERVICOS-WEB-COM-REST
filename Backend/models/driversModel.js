@@ -1,6 +1,10 @@
 import promissePool from "../config/db.js";
 
 const model = {
+  findAll: async function () {
+    const [result] = await promissePool.query("SELECT * FROM drivers");
+    return result;
+  },
   find: async function (driver) {
     const [result] = await promissePool.query("SELECT * FROM drivers WHERE nome = ?", [driver.nome]);
     return result;

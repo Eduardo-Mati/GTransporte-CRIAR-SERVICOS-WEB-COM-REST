@@ -2,10 +2,12 @@ import driversModel from "../models/driversModel.js";
 
 const controller = {
   getAll: (req, res) => {
-    res.send("get all drivers");
+    const drivers = driversModel.findAll();
+    res.send(drivers);
   },
   getById: (req, res) => {
-    res.send(`get driver by ID ${req.params.id}`);
+    const driver = driversModel.findById(req.params.id);
+    res.send(driver);
   },
   create: (req, res) => {
     const driver = req.body;

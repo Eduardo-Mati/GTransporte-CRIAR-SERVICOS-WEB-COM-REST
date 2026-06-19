@@ -1,0 +1,77 @@
+@import './pages-shared.css';
+ 
+/* ========================================
+   REPORTS — estilos específicos (cards + textarea)
+======================================== */
+ 
+.filter-select {
+  cursor: pointer;
+}
+ 
+.reports-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+ 
+.report-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  padding: 18px 22px;
+}
+ 
+.report-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+ 
+.report-date {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(255,255,255,0.4);
+  margin-bottom: 4px;
+}
+ 
+.report-travel {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+  color: #ffffff;
+}
+ 
+.report-content {
+  font-size: 13px;
+  line-height: 1.6;
+  color: rgba(255,255,255,0.8);
+  margin: 0;
+  white-space: pre-wrap;
+}
+ 
+.form-group textarea {
+  padding: 11px 14px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 10px;
+  color: #fff;
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+  resize: vertical;
+  transition: border-color 0.2s;
+}
+ 
+.form-group textarea::placeholder { color: rgba(255,255,255,0.3); }
+ 
+.form-group textarea:focus {
+  border-color: rgba(58,111,255,0.6);
+  box-shadow: 0 0 0 3px rgba(58,111,255,0.12);
+}

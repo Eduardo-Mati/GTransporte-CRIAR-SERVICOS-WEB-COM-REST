@@ -4,9 +4,34 @@ import "../scripts/stars_animation.jsx";
 import { useNavigate } from "react-router-dom";
 
 function Register() {
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
+
+  const sendRegister = async (name, email, password) => {
+    try {
+      const response = await fetch("http://localhost:3000/api/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ name, email, password })
+      });
+
+      await response.json();
+      if (response.ok) {
+        alert("Registro realizado com sucesso");
+        navigate("/login");
+      } else {
+        alert("Erro ao realizar registro");
+      }
+    } catch (error) {
+      console.error("Error during registration:", error);
+      alert("Ocorreu um erro ao tentar registrar");
+    }
+  };
+
 
   return (
     <div className="page">
@@ -45,6 +70,17 @@ function Register() {
             onSubmit={(e) => e.preventDefault()}
           >
             <div className="form-field">
+              <label htmlFor="name">Nome</label>
+              <input
+                type="text"
+                id="name"
+                name="name"
+                placeholder="Seu nome"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+            </div>
+            <div className="form-field">
               <label htmlFor="email">E-mail</label>
               <input
                 type="text"
@@ -66,14 +102,14 @@ function Register() {
                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
-            <button className="btn-next" type="submit" onClick={() => {}}>
+            <button className="btn-next" type="submit" onClick={() => sendRegister(name, email, password)}>
               Registrar
             </button>
 
             <button
               className="btn-register"
               onClick={() => {
-                navigate("/Login");
+                navigate("/login");
               }}
             >
               Já possui uma conta?

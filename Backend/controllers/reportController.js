@@ -2,10 +2,12 @@ import reportModel from "../models/reportModel.js";
 
 const controller = {
   getAll: (req, res) => {
-    res.send("get all reports");
+    const reports = reportModel.findAll();
+    res.send(reports);
   },
   getById: (req, res) => {
-    res.send(`get report by ID ${req.params.id}`);
+    const report = reportModel.find(req.params.id);
+    res.send(report);
   },
   create: (req, res) => {
     const report = req.body;
