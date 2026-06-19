@@ -1,20 +1,20 @@
 import promissePool from "../config/db.js";
 
 const model = {
-  find: async function (user) {
-    const [result] = await promissePool.query("SELECT * FROM users WHERE email = ?", [user.email]);
+  find: async function (fleet) {
+    const [result] = await promissePool.query("SELECT * FROM fleets WHERE placa = ?",[fleet.placa]);
     return result;
   },
-  create: async function (user) {
-    const [result] = await promissePool.query("INSERT INTO users (name, email, password) VALUES (?, ?, ?)", [user.name, user.email, user.password]);
-    return { id: result.insertId, ...user };
+  create: async function (fleet) {
+    const [result] = await promissePool.query("INSERT INTO fleets (placa, modelo, ano, capacidade, status) VALUES (?, ?, ?, ?, ?)", [fleet.placa, fleet.modelo, fleet.ano, fleet.capacidade, fleet.status]);
+    return { fleetId: result.insertId, ...fleet };
   },
-  update: async function (id, user) {
-    const [result] = await promissePool.query("UPDATE users SET name = ?, email = ?, password = ? WHERE id = ?", [user.name, user.email, user.password, id]);
-    return { id, ...user };
+  update: async function (id, fleet) {
+    const [result] = await promissePool.query("UPDATE fleets SET placa = ?, modelo = ?, ano = ?, capacidade = ?, status = ? WHERE fleetId = ?", [fleet.placa, fleet.modelo, fleet.ano, fleet.capacidade, fleet.status, id]);
+    return { fleetId: id, ...fleet };
   },
   delete: async function (id) {
-    const [result] = await promissePool.query("DELETE FROM users WHERE id = ?",[id]);
+    const [result] = await promissePool.query("DELETE FROM fleets WHERE fleetId = ?",[id]);
     return result;
   },
 };

@@ -1,20 +1,20 @@
 import promissePool from "../config/db.js";
 
 const model = {
-  find: async function (user) {
-    const [result] = await promissePool.query("SELECT * FROM users WHERE email = ?", [user.email]);
+  find: async function (driver) {
+    const [result] = await promissePool.query("SELECT * FROM drivers WHERE nome = ?", [driver.nome]);
     return result;
   },
-  create: async function (user) {
-    const [result] = await promissePool.query("INSERT INTO users (name, email, password) VALUES (?, ?, ?)", [user.name, user.email, user.password]);
-    return { id: result.insertId, ...user };
+  create: async function (driver) {
+    const [result] = await promissePool.query("INSERT INTO drivers (nome, cnh, categoria, telefone, status) VALUES (?, ?, ?, ?, ?)", [driver.nome, driver.cnh, driver.categoria, driver.telefone, driver.status]);
+    return { driverId: result.insertId, ...driver };
   },
-  update: async function (id, user) {
-    const [result] = await promissePool.query("UPDATE users SET name = ?, email = ?, password = ? WHERE id = ?", [user.name, user.email, user.password, id]);
-    return { id, ...user };
+  update: async function (id, driver) {
+    const [result] = await promissePool.query("UPDATE drivers SET nome = ?, cnh = ?, categoria = ?, telefone = ?, status = ? WHERE driverId = ?", [driver.nome, driver.cnh, driver.categoria, driver.telefone, driver.status, id]);
+    return { driverId: id, ...driver };
   },
   delete: async function (id) {
-    const [result] = await promissePool.query("DELETE FROM users WHERE id = ?", [id]);
+    const [result] = await promissePool.query("DELETE FROM drivers WHERE driverId = ?", [id]);
     return result;
   },
 };

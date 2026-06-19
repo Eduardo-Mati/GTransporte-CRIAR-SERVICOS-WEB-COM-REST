@@ -1,20 +1,20 @@
 import promissePool from "../config/db.js";
 
 const model = {
-  find: async function (user) {
-    const [result] = await promissePool.query("SELECT * FROM users WHERE email = ?",[user.email]);
+  find: async function (report) {
+    const [result] = await promissePool.query("SELECT * FROM reports WHERE travelId = ?",[report.travelId]);
     return result;
   },
-  create: async function (user) {
-    const [result] = await promissePool.query("INSERT INTO users (name, email, password) VALUES (?, ?, ?)",[user.name, user.email, user.password]);
-    return { id: result.insertId, ...user };
+  create: async function (report) {
+    const [result] = await promissePool.query("INSERT INTO reports (travelId, userId, content) VALUES (?, ?, ?)",[report.travelId, report.userId, report.content]);
+    return { reportId: result.insertId, ...report };
   },
-  update: async function (id, user) {
-    const [result] = await promissePool.query("UPDATE users SET name = ?, email = ?, password = ? WHERE id = ?",[user.name, user.email, user.password, id]);
-    return { id, ...user };
+  update: async function (id, report) {
+    const [result] = await promissePool.query("UPDATE reports SET travelId = ?, userId = ?, content = ? WHERE reportId = ?",[report.travelId, report.userId, report.content, id]);
+    return { reportId: id, ...report };
   },
   delete: async function (id) {
-    const [result] = await promissePool.query("DELETE FROM users WHERE id = ?",[id]);
+    const [result] = await promissePool.query("DELETE FROM reports WHERE reportId = ?",[id]);
     return result;
   },
 };

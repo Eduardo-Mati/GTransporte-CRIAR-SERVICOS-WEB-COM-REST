@@ -1,20 +1,20 @@
 import promissePool from "../config/db.js";
 
 const model = {
-  find: async function (user) {
-    const [result] = await promissePool.query("SELECT * FROM users WHERE email = ?",[user.email]);
+  find: async function (travel) {
+    const [result] = await promissePool.query("SELECT * FROM travels WHERE origem = ?",[travel.origem]);
     return result;
   },
-  create: async function (user) {
-    const [result] = await promissePool.query("INSERT INTO users (name, email, password) VALUES (?, ?, ?)",[user.name, user.email, user.password]);
-    return { id: result.insertId, ...user };
+  create: async function (travel) {
+    const [result] = await promissePool.query("INSERT INTO travels (origem, destino, veiculo_id, motorista_id, status) VALUES (?, ?, ?, ?, ?)",[travel.origem, travel.destino, travel.veiculo_id, travel.motorista_id, travel.status]);
+    return { travelId: result.insertId, ...travel };
   },
-  update: async function (id, user) {
-    const [result] = await promissePool.query("UPDATE users SET name = ?, email = ?, password = ? WHERE id = ?",[user.name, user.email, user.password, id]);
-    return { id, ...user };
+  update: async function (id, travel) {
+    const [result] = await promissePool.query("UPDATE travels SET origem = ?, destino = ?, veiculo_id = ?, motorista_id = ?, status = ? WHERE travelId = ?",[travel.origem, travel.destino, travel.veiculo_id, travel.motorista_id, travel.status, id]);
+    return { travelId: id, ...travel };
   },
   delete: async function (id) {
-    const [result] = await promissePool.query("DELETE FROM users WHERE id = ?",[id]);
+    const [result] = await promissePool.query("DELETE FROM travels WHERE travelId = ?",[id]);
     return result;
   },
 };
