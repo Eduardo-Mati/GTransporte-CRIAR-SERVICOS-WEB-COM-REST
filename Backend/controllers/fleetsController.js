@@ -1,29 +1,29 @@
 import fleetsModel from "../models/fleetsModel.js";
 
 const controller = {
-  getAll: (req, res) => {
-    const fleets = fleetsModel.findAll();
-    res.send(fleets);
+  getAll: async (req, res) => {
+    const fleets = await fleetsModel.findAll();
+    res.json(fleets);
   },
-  getById: (req, res) => {
-    const fleet = fleetsModel.find(req.params.id);
+  getById: async (req, res) => {
+    const fleet = await fleetsModel.find(req.params.id);
     res.send(fleet);
   },
-  create: (req, res) => {
+  create: async (req, res) => {
     const fleet = req.body;
-    const newFleet = fleetsModel.create(fleet);
-    res.status(201).send(`create fleet with name ${JSON.stringify(fleet.name)}`);
+    const newFleet = await fleetsModel.create(fleet);
+    res.status(201).json(newFleet);
   },
-  update: (req, res) => {
+  update: async (req, res) => {
     const fleet = req.body;
     const fleetId = req.params.id;
-    const updatedFleet = fleetsModel.update(fleetId, fleet);
-    res.send(`update fleet by id ${req.params.id}`);
+    const updatedFleet = await fleetsModel.update(fleetId, fleet);
+    res.json(updatedFleet);
   },
-  delete: (req, res) => {
+  delete: async (req, res) => {
     const fleetId = req.params.id;
-    const deletedFleet = fleetsModel.delete(fleetId);
-    res.send(`delete fleet by id ${req.params.id}`);
+    const deletedFleet = await fleetsModel.delete(fleetId);
+    res.status(200).end();
   },
 };
 export default controller;

@@ -8,17 +8,39 @@ const Home = () => {
     viagensEmAndamento: 0,
   });
 
-  useEffect(() => {
-    // Busca totais do localStorage (sincronizado com as páginas)
-    const frotas = JSON.parse(localStorage.getItem("frotas") || "[]");
-    const motoristas = JSON.parse(localStorage.getItem("motoristas") || "[]");
-    const viagens = JSON.parse(localStorage.getItem("viagens") || "[]");
+  
 
-    setStats({
-      totalFrotas: frotas.length,
-      motoristasAtivos: motoristas.filter((m) => m.status === "Ativo").length,
-      viagensEmAndamento: viagens.filter((v) => v.status === "Em andamento").length,
-    });
+  const fetchStats = async () => {
+    const token = localStorage.getItem('token');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const [frotasRes, motoristasRes, viagensRes] = await Promise.all([
+      fetch('http://localhost:3000/api/fleets', { headers }),
+      fetch('http://localhost:3000/api/drivers', { headers }),
+      fetch('http://localhost:3000/api/travels', { headers }),
+    ]);
+
+    if (frotasRes.ok && motoristasRes.ok && viagensRes.ok) {
+      const frotasData = await frotasRes.json();
+      const motoristasData = await motoristasRes.json();
+      const viagensData = await viagensRes.json();
+
+      setStats({
+        totalFrotas: frotasData.length,
+        motoristasAtivos: motoristasData.filter(d => d.status === 'Ativo').length,
+        viagensEmAndamento: viagensData.filter(v => v.status === 'Em andamento').length,
+      });
+    } else {
+      console.error('Failed to fetch stats');
+    }
+  }
+  useEffect(() => {
+    setTimeout(() => {
+      fetchStats();
+    }, 500);
   }, []);
 
   return (
